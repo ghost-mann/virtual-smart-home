@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Home Dashboard</title>
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 p-10">
+  <h1 class="text-2xl font-bold mb-4">Virtual Smart Home</h1>
+
+  <div class="grid grid-cols-1 gap-4">
+    <button onclick="toggleDevice('light')" class="bg-yellow-400 p-4 rounded shadow">Toggle Light</button>
+    <button onclick="toggleDevice('fan')" class="bg-blue-400 p-4 rounded shadow">Toggle Fan</button>
+    <button onclick="toggleDevice('door')" class="bg-green-400 p-4 rounded shadow">Toggle Door Lock</button>
+  </div>
+
+  <script>
+    const client = mqtt.connect('ws://localhost:9001');
+
+    client.on('connect', () => {
+      console.log('Connected to MQTT broker');
+
+      // Subscribe to feedback topics
+      ['light', 'fan', 'door'].forEach(device => {
+        client.subscribe(`home/${device}/status`);
+      });
+    });
+
+    client.on('message', (topic, message) => {
+      alert(`Status update from ${topic}: ${message.toString()}`);
+    });
+
+    function toggleDevice(device) {
+      const topic = `home/${device}/toggle`;
+      client.publish(topic, 'TOGGLE');
+    }
+  </script>
+</body>
+</html>
